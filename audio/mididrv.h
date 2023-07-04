@@ -28,6 +28,8 @@
 #include "common/timer.h"
 #include "common/array.h"
 
+static int object_id_counter = 0;
+
 class MidiChannel;
 
 /**
@@ -100,6 +102,7 @@ enum MidiDriverFlags {
  * TODO: Document this, give it a better name.
  */
 class MidiDriver_BASE {
+
 public:
 	static const uint8 MIDI_CHANNEL_COUNT = 16;
 	static const uint8 MIDI_RHYTHM_CHANNEL = 9;
@@ -264,6 +267,7 @@ protected:
 	 * It's set by '--dump-midi' command line parameter
 	 */
 	bool _midiDumpEnable;
+	int _object_id;
 
 	/** Used for MIDI dumping delta calculation */
 	uint32 _prevMillis;

@@ -450,7 +450,8 @@ void MidiDriver::sendGMReset() {
 }
 
 void MidiDriver_BASE::midiDumpInit() {
-	g_system->displayMessageOnOSD(_("Starting MIDI dump"));
+	debug("%s", "MidiDriver_BASE::midiDumpInit()");
+
 	_midiDumpCache.clear();
 	_prevMillis = g_system->getMillis(true);
 }
@@ -491,6 +492,8 @@ void MidiDriver_BASE::midiDumpDelta() {
 }
 
 void MidiDriver_BASE::midiDumpDo(uint32 b) {
+	debug("%s", "MidiDriver_BASE::midiDumpDo(uint32 b)");
+
 	const byte status = b & 0xff;
 	const byte firstOp = (b >> 8) & 0xff;
 	const byte secondOp = (b >> 16) & 0xff;
@@ -509,6 +512,8 @@ void MidiDriver_BASE::midiDumpDo(uint32 b) {
 }
 
 void MidiDriver_BASE::midiDumpSysEx(const byte *msg, uint16 length) {
+	debug("%s", "MidiDriver_BASE::midiDumpSysEx(const byte *msg, uint16 length)");
+
 	midiDumpDelta();
 	_midiDumpCache.push_back(0xf0);
 	debugN("0xf0, length(");
@@ -524,8 +529,10 @@ void MidiDriver_BASE::midiDumpSysEx(const byte *msg, uint16 length) {
 
 
 void MidiDriver_BASE::midiDumpFinish() {
+	debug("%s", "MidiDriver_BASE::midiDumpFinish()");
+
 	Common::DumpFile *midiDumpFile = new Common::DumpFile();
-	midiDumpFile->open("dump.mid");
+	midiDumpFile->open("dump"+ Common::String(_object_id) +".mid");// TODO fix: correct characters
 	midiDumpFile->write("MThd\0\0\0\x6\0\x1\0\x2", 12);		// standard MIDI file header, with two tracks
 	midiDumpFile->write("\x1\xf4", 2);						// division - 500 ticks per beat, i.e. a quarter note. Each tick is 1ms
 	midiDumpFile->write("MTrk", 4);							// start of first track - doesn't contain real data, it's just common practice to use two tracks
@@ -537,12 +544,15 @@ void MidiDriver_BASE::midiDumpFinish() {
 	midiDumpFile->write("\0\xff\x2f\0", 4);			    	// meta event - end of track
 	midiDumpFile->finalize();
 	midiDumpFile->close();
-	const char msg[] = "Ending MIDI dump, created 'dump.mid'";
-	g_system->displayMessageOnOSD(_(msg));		//TODO: why it doesn't appear?
-	debug("%s", msg);
+	
+	debug("%s", "Ending MIDI dump, created 'dump.mid'");
 }
 
 MidiDriver_BASE::MidiDriver_BASE() {
+
+	_object_id = object_id_counter++;
+	debug("%s--id:%i", "MidiDriver_BASE::MidiDriver_BASE()", _object_id);
+
 	_midiDumpEnable = ConfMan.getBool("dump_midi");
 	if (_midiDumpEnable) {
 		midiDumpInit();
@@ -550,8 +560,15 @@ MidiDriver_BASE::MidiDriver_BASE() {
 }
 
 MidiDriver_BASE::~MidiDriver_BASE() {
-	if (_midiDumpEnable && !_midiDumpCache.empty()) {
-		midiDumpFinish();
+	debug("%s--id:%i", "MidiDriver_BASE::~MidiDriver_BASE()", _object_id);
+	
+	if (_midiDumpEnable) {
+		debug("%s", "_midiDumpEnabled=True");
+		if (!_midiDumpCache.empty()) {
+			midiDumpFinish();
+		} else {
+			debug("%s", "_midiDumpCache is empty");
+		}
 	}
 }
 
