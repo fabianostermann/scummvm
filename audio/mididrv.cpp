@@ -450,7 +450,10 @@ void MidiDriver::sendGMReset() {
 }
 
 void MidiDriver_BASE::midiDumpInit() {
-	g_system->displayMessageOnOSD(_("Starting MIDI dump"));
+	const char msg[] = "Starting MIDI dump";
+	g_system->displayMessageOnOSD(_(msg));
+	debug("%s", msg);
+
 	_midiDumpCache.clear();
 	_prevMillis = g_system->getMillis(true);
 }
