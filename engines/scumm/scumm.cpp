@@ -2544,6 +2544,15 @@ void ScummEngine_v0::scummLoop(int delta) {
 }
 
 void ScummEngine::scummLoop(int delta) {
+	debug("%s%d", "Enter ScummLoop, delta=", delta);
+
+	 // TODO: make following delayed and random
+	 //       Problem: seems not to change iMuse signals here
+	startScene(15, nullptr, 0);
+	// TODO: for delay, use sum deltas or:
+	//uint32 millis = g_system->getMillis(true);
+
+
 	// Notify the script about how much time has passed, in jiffies
 	if (VAR_TIMER != 0xFF)
 		VAR(VAR_TIMER) = delta;
