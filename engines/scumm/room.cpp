@@ -33,6 +33,8 @@
 #include "scumm/sound.h"
 #include "scumm/util.h"
 
+#include "scumm.cpp"
+
 namespace Scumm {
 
 /**
@@ -43,7 +45,7 @@ void ScummEngine::startScene(int room, Actor *a, int objectNr) {
 	int i, where;
 
 	debug("ENV : Loading room %d", room);
-	debugC(DEBUG_GENERAL, "Place actor next to object %d", objectNr);
+	WoodtickSimulator::set_current_room(room);
 	
 #ifdef ENABLE_SCUMM_7_8
 	if (_game.version >= 7) {
@@ -260,7 +262,6 @@ void ScummEngine::startScene(int room, Actor *a, int objectNr) {
 		} else if (room == 90)
 			_system->setFeatureState(OSystem::kFeatureVirtualKeyboard, true);
 	}
-
 }
 
 /**

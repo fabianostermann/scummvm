@@ -1182,6 +1182,8 @@ void Sound::stopAllSounds() {
 void Sound::soundKludge(int *list, int num) {
 	int i;
 
+	//debug("iMUSE : soundKludge num=%d", num);
+
 #ifdef ENABLE_SCUMM_7_8
 	if (_vm->_imuseDigital) {
 		_vm->_imuseDigital->parseScriptCmds(list[0],  list[1],  list[2],  list[3],  list[4],

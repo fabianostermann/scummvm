@@ -2413,6 +2413,7 @@ void ScummEngine_v6::o6_wait() {
 }
 
 void ScummEngine_v6::o6_soundKludge() {
+
 	int list[16];
 	int num = getStackList(list, ARRAYSIZE(list));
 

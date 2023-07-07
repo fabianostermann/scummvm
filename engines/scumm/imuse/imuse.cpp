@@ -743,7 +743,7 @@ int32 IMuseInternal::doCommand_internal(int numargs, int a[]) {
 		return -1;
 
 	{
-		Common::String string = "doCommand - ";
+		Common::String string = "iMUSE : doCommand - ";
 		string += Common::String::format("%d (%d/%d)", a[0], (int)param, (int)cmd);
 		for (i = 1; i < numargs; ++i)
 			string += Common::String::format(", %d", a[i]);

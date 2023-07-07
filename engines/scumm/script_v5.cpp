@@ -2713,6 +2713,8 @@ void ScummEngine_v5::o5_isSoundRunning() {
 }
 
 void ScummEngine_v5::o5_soundKludge() {
+	//debug("iMUSE : ScummEngine_v5::o5_soundKludge()");
+
 	int items[NUM_SCRIPT_LOCAL];
 	int num = getWordVararg(items);
 	_sound->soundKludge(items, num);
