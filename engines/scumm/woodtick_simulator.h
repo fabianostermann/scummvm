@@ -46,10 +46,13 @@ int walk_to_town_center_from[16][5*3+1] {
         300, 161,76 },
     {}, //13
     //14 laundry
-    { 3*3,
+    { 4*3,
         0, 182,141,
-        150, 144,78,
-        300, 161,76 },
+        150, 75,78,
+        500, 161,76,
+        100, 161,76 }, // be careful here!
+        // -> Screen is not pushed all to the left,
+        //    but seems to work for now from all other waypoints..
     //15 woodshop
     { 4*3,
         0, 81,86,
@@ -68,7 +71,7 @@ int walk_inside[16][3*3+1] {
     {}, //6
     {}, //7 outside
     //8 wally
-    { 3, 0, 255,56 },
+    { 3, 0, 240,56 },
     //9 bar
     { 3, 0, 307,114 },
     {}, //10
@@ -99,28 +102,29 @@ enum Woodtick {
     laundry = 14,
     woodshop = 15,
 };
-
 Woodtick WoodtickAsArray[] = {outside, wally, bar, hotel, laundry, woodshop};
+
+// use this for debugging waypoints
+bool use_debug_targets = false;
+int debug_target_idx = 0;
+Woodtick debugTargets[] = {laundry,woodshop,wally,bar,hotel};
 /**
  * Return target rooms in random order
+ * (or debug order if debug bool is set)
  */
 Woodtick next_target() {
+		if (use_debug_targets) {
+			return debugTargets[debug_target_idx++];
+		}
+
     int target_pos_in_array = std::rand() % (WOODTICK_LENGTH-1) + 1;
     //debug("SIM : next target from array pos=%d", target_pos_in_array);
     return WoodtickAsArray[target_pos_in_array];
 }
 
-/* USE THIS FOR DEBUGGING WAYPOINTS */
-/*
-Woodtick dummyTargets[] = {bar, woodshop, hotel};
-int next_dummy_target_counter = 0;
-Woodtick next_target() {
-    return dummyTargets[next_dummy_target_counter++];
-}*/
-
 int current_room = Woodtick::outside;
 
-#define MAX_QUEUE_LENGTH 5
+#define MAX_QUEUE_LENGTH 10
 int delayQueue[MAX_QUEUE_LENGTH];
 Common::Point pointQueue[MAX_QUEUE_LENGTH];
 int queue_pos = -1;
@@ -139,14 +143,14 @@ int idle_timer = 50;
 
 // TODO add randomized time here
 void reset_idle_timer() {
-    idle_timer = 400; // 400 is verified minimum value
+    idle_timer = 400; // minimum 400 is tested
 }
 
 void click_at(Common::Point point) {
 
     if (point.x < 0 || point.x > 319
         || point.y < 0 || point.y > 143) {
-        debug("ERROR : mouse position (%d,%d) out of frame", point.x, point.y);
+        debug("SIM ERROR : mouse position (%d,%d) out of frame", point.x, point.y);
         quit_simulation();
     }
 
@@ -161,11 +165,13 @@ void click_at(Common::Point point) {
  * waypoints must be added in inverse order!
  */
 void add_waypoint(int delay, Common::Point point) {
-    debug("SIM : --- add waypoint (delay=%d, x=%d, y=%d)", delay, point.x, point.y);
 
     queue_pos++;
+    debug("SIM : --- add waypoint (delay=%d, x=%d, y=%d) at queue_pos=%d",
+                                      delay, point.x, point.y, queue_pos);
+
     if (queue_pos >= MAX_QUEUE_LENGTH) {
-        debug("ERROR : queue_pos >= MAX_QUEUE_LENGTH.");
+        debug("SIM ERROR : queue_pos >= MAX_QUEUE_LENGTH.");
         quit_simulation();
     }
 
@@ -202,6 +208,8 @@ void simulator_step(int delta) {
 
     if (!initialized) {
 
+				debug("SIM : Initializing Woodtick Simulator..");
+
         // first thing to do: go to start point
         add_multiple_waypoints(walk_to_town_center_from[Woodtick::outside]);
 
@@ -232,13 +240,13 @@ void simulator_step(int delta) {
 
     if (idle_timer > 0) {
 		idle_timer -= delta;
-        //debug("SIM : delta=%d (idle_timer=%d), room=%d.",
-        //    delta, idle_timer, current_room);
+        debug("SIM : delta=%d (idle_timer=%d), room=%d.",
+            delta, idle_timer, current_room);
         return;
 	}
 	
     if (queue_pos >= 0) {
-        //debug("SIM : queue pos=%d, queue_timer=%d", queue_pos, delayQueue[queue_pos]);
+        debug("SIM : queue pos=%d, queue_timer=%d", queue_pos, delayQueue[queue_pos]);
         if (delayQueue[queue_pos] > 0) {
             delayQueue[queue_pos] -= delta;
         }
@@ -246,12 +254,10 @@ void simulator_step(int delta) {
             click_at(pointQueue[queue_pos]);
             queue_pos--;
         }
+        return;
     }
 
-    if (idle_timer <= 0
-        && queue_pos < 0
-        && current_room == Woodtick::outside) {
-            
+    if (current_room == Woodtick::outside) {     
             int target_room = next_target();
 
             debug("SIM : New target is room %d", target_room);
@@ -276,12 +282,13 @@ void set_current_room(int roomNumber) {
         case bar:
             add_multiple_waypoints(walk_to_town_center_from[current_room]);
             reset_idle_timer();
+            break;
         case outside:
             // do not add waypoint for going outside
             // TODO maybe add decision of new destination here?
             break;
         default:
-            debug("ERROR : We have left woodtick!");
+            debug("SIM ERROR : We have left woodtick!");
             quit_simulation();
     }
 }
