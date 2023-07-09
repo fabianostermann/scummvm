@@ -98,6 +98,18 @@ enum Woodtick {
     laundry = 14,
     woodshop = 15,
 };
+Woodtick WoodtickAsArray[] = {outside, wally, bar, hotel, laundry, woodshop};
+
+/**
+ * Get targets in sequential order (TODO make this random)
+ */
+int target_pos_in_enum=0;
+Woodtick next_target() {
+    target_pos_in_enum++;
+    if (target_pos_in_enum > 5)
+        target_pos_in_enum = 1; // skip Woodtick::outside as target
+    return WoodtickAsArray[target_pos_in_enum];
+}
 
 int current_room = Woodtick::outside;
 
@@ -120,7 +132,7 @@ int idle_timer = 50;
 
 // TODO add randomized time here
 void reset_idle_timer() {
-    idle_timer = 350;
+    idle_timer = 350; // 350 is verified minimum value
 }
 
 void click_at(Common::Point point) {
@@ -216,16 +228,16 @@ void simulator_step(int delta) {
         && current_room == Woodtick::outside) {
             
             // TODO: make target a random choice!
-            int target_room = Woodtick::woodshop;
+            int target_room = next_target();
 
-            debug("SIM : Setting new route to room %d", target_room);
+            debug("SIM : New target is room %d", target_room);
             add_multiple_waypoints(walk_inside[target_room]);
             reset_idle_timer();
         }
 }
 
 /**
- * Gets called by room.cpp for simulation sanity check
+ * Called by room.cpp for simulation sanity check
  */
 void set_current_room(int roomNumber) {
     debug("SIM : got call from room.cpp, entered room %d", roomNumber);
