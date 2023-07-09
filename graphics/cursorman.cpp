@@ -47,6 +47,13 @@ bool CursorManager::isVisible() {
 }
 
 bool CursorManager::showMouse(bool visible) {
+
+	/* HACK for woodtick_simulator.h
+	 *   since we do not want input,
+	 *   just remove drawing of the mouse cursor
+	 */
+	visible = false;
+
 	if (_cursorStack.empty())
 		return false;
 	if (_locked) {

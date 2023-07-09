@@ -114,7 +114,10 @@ enum EventType {
 
 	/** ScummVM has gained or lost focus. */
 	EVENT_FOCUS_GAINED = 36,
-	EVENT_FOCUS_LOST = 37
+	EVENT_FOCUS_LOST = 37,
+
+	/* HACK for woodtick_simulator.h */
+	EVENT_WOODTICK_SIMULATOR_CLICK = 9999,
 };
 
 const int16 JOYAXIS_MIN = -32768;

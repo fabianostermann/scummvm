@@ -104,6 +104,44 @@ void ScummEngine_v80he::parseEvent(Common::Event event) {
 #endif
 
 void ScummEngine::parseEvent(Common::Event event) {
+
+	/* HACK for woodtick_simulator.h
+	 *   we do not want any real input
+	 */
+	if (event.type == Common::EVENT_WOODTICK_SIMULATOR_CLICK) {
+
+		/* assume sim event to be a left click */ 
+		//if (event.type == Common::EVENT_LBUTTONDOWN)
+			_leftBtnPressed |= msClicked|msDown;
+		//else if (event.type == Common::EVENT_RBUTTONDOWN)
+		//	_rightBtnPressed |= msClicked|msDown;
+
+		_mouse.x = event.mouse.x;
+		_mouse.y = event.mouse.y;
+
+		if (_renderMode == Common::kRenderHercA || _renderMode == Common::kRenderHercG) {
+			_mouse.x -= (kHercWidth - _screenWidth * 2) / 2;
+			_mouse.x >>= 1;
+			if (_game.version < 3) {
+				// MM/ZAK v1/v2
+				if (_mouse.y >= _virtscr[kMainVirtScreen].topline)
+					_mouse.y = _mouse.y / 2 + _virtscr[kMainVirtScreen].topline / 2;
+				if (_mouse.y > _virtscr[kVerbVirtScreen].topline)
+					_mouse.y += (_mouse.y - _virtscr[kVerbVirtScreen].topline);
+			} else {
+				// MI1
+				_mouse.y = _mouse.y * 4 / 7;
+			}
+
+		} else if (_macScreen || (_useCJKMode && _textSurfaceMultiplier == 2) || _renderMode == Common::kRenderCGA_BW || _enableEGADithering) {
+			_mouse.x >>= 1;
+			_mouse.y >>= 1;
+		}
+		return;
+	}
+
+	/**
+
 	switch (event.type) {
 	case Common::EVENT_CUSTOM_ENGINE_ACTION_START:
 		if (event.customType >= kScummActionCount) {
@@ -298,6 +336,7 @@ void ScummEngine::parseEvent(Common::Event event) {
 	default:
 		break;
 	}
+	*/
 }
 
 void ScummEngine::parseEvents() {

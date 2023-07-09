@@ -87,9 +87,10 @@ int walk_inside[16][3*3+1] {
 /**
  * Enum holds all available rooms in woodtick
  * 
- * USAGE: startScene(Woodtick::bar, nullptr, 0);
+ * USAGE in room.cpp: startScene(Woodtick::bar, nullptr, 0);
  * -> Unfortunately, this does not affect the iMuse system
  */
+const int WOODTICK_LENGTH = 6;
 enum Woodtick {
 	outside = 7,
     wally = 8,
@@ -98,22 +99,28 @@ enum Woodtick {
     laundry = 14,
     woodshop = 15,
 };
-Woodtick WoodtickAsArray[] = {outside, wally, bar, hotel, laundry, woodshop};
 
+Woodtick WoodtickAsArray[] = {outside, wally, bar, hotel, laundry, woodshop};
 /**
- * Get targets in sequential order (TODO make this random)
+ * Return target rooms in random order
  */
-int target_pos_in_enum=0;
 Woodtick next_target() {
-    target_pos_in_enum++;
-    if (target_pos_in_enum > 5)
-        target_pos_in_enum = 1; // skip Woodtick::outside as target
-    return WoodtickAsArray[target_pos_in_enum];
+    int target_pos_in_array = std::rand() % (WOODTICK_LENGTH-1) + 1;
+    //debug("SIM : next target from array pos=%d", target_pos_in_array);
+    return WoodtickAsArray[target_pos_in_array];
 }
+
+/* USE THIS FOR DEBUGGING WAYPOINTS */
+/*
+Woodtick dummyTargets[] = {bar, woodshop, hotel};
+int next_dummy_target_counter = 0;
+Woodtick next_target() {
+    return dummyTargets[next_dummy_target_counter++];
+}*/
 
 int current_room = Woodtick::outside;
 
-#define MAX_QUEUE_LENGTH 10
+#define MAX_QUEUE_LENGTH 5
 int delayQueue[MAX_QUEUE_LENGTH];
 Common::Point pointQueue[MAX_QUEUE_LENGTH];
 int queue_pos = -1;
@@ -132,7 +139,7 @@ int idle_timer = 50;
 
 // TODO add randomized time here
 void reset_idle_timer() {
-    idle_timer = 350; // 350 is verified minimum value
+    idle_timer = 400; // 400 is verified minimum value
 }
 
 void click_at(Common::Point point) {
@@ -143,9 +150,9 @@ void click_at(Common::Point point) {
         quit_simulation();
     }
 
-    debug("SIM : click! (x=%d,y=%d)", point.x, point.y);
+    //debug("SIM : click! (x=%d,y=%d)", point.x, point.y);
     Common::Event event;
-    event.type = Common::EVENT_LBUTTONDOWN;
+    event.type = Common::EVENT_WOODTICK_SIMULATOR_CLICK;
     event.mouse = point;
     g_system->getEventManager()->pushEvent(event);
 }
@@ -154,7 +161,7 @@ void click_at(Common::Point point) {
  * waypoints must be added in inverse order!
  */
 void add_waypoint(int delay, Common::Point point) {
-    debug("SIM : add waypoint (delay=%d, x=%d, y=%d)", delay, point.x, point.y);
+    debug("SIM : --- add waypoint (delay=%d, x=%d, y=%d)", delay, point.x, point.y);
 
     queue_pos++;
     if (queue_pos >= MAX_QUEUE_LENGTH) {
@@ -190,13 +197,31 @@ bool initialized = false; // DO NOT CHANGE!
 void simulator_step(int delta) {
 
     // debug print mouse position to determine click locations
-    Common::Point mp = g_system->getEventManager()->getMousePos();
-    debug("SIM : Mouse pos=(%d,%d)", mp.x, mp.y);
+    //Common::Point mp = g_system->getEventManager()->getMousePos();
+    //debug("SIM : Mouse pos=(%d,%d)", mp.x, mp.y);
 
     if (!initialized) {
-        
+
+        // first thing to do: go to start point
         add_multiple_waypoints(walk_to_town_center_from[Woodtick::outside]);
-        
+
+        // initialize seed for random number generation
+        TimeDate time;
+        g_system->getTimeAndDate(time);
+        uint32 seed = time.tm_sec + time.tm_min * 60U + time.tm_hour * 3600U;
+        seed += time.tm_mday * 86400U + time.tm_mon * 86400U * 31U;
+        seed += time.tm_year * 86400U * 366U;
+        uint32 millis = g_system->getMillis();
+	    seed = seed * 1000U + millis;
+        debug("SIM : Initialize random number generator with seed=%u, millis=%d", seed, millis);
+        std::srand(seed);
+
+        debugN("SIM : Test random numbers: ");
+        for (int j=0; j<10; j++) {
+            debugN("%d, ", std::rand() % 5 + 1);
+        }
+        debug("...");
+
         initialized = true;
     }
 
@@ -207,13 +232,13 @@ void simulator_step(int delta) {
 
     if (idle_timer > 0) {
 		idle_timer -= delta;
-        debug("SIM : delta=%d (idle_timer=%d), room=%d.",
-            delta, idle_timer, current_room);
+        //debug("SIM : delta=%d (idle_timer=%d), room=%d.",
+        //    delta, idle_timer, current_room);
         return;
 	}
 	
     if (queue_pos >= 0) {
-        debug("SIM : queue pos=%d, queue_timer=%d", queue_pos, delayQueue[queue_pos]);
+        //debug("SIM : queue pos=%d, queue_timer=%d", queue_pos, delayQueue[queue_pos]);
         if (delayQueue[queue_pos] > 0) {
             delayQueue[queue_pos] -= delta;
         }
@@ -227,7 +252,6 @@ void simulator_step(int delta) {
         && queue_pos < 0
         && current_room == Woodtick::outside) {
             
-            // TODO: make target a random choice!
             int target_room = next_target();
 
             debug("SIM : New target is room %d", target_room);

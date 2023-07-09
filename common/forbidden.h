@@ -501,17 +501,23 @@
 
 // Define a Common::RandomSource as part of the engine,
 // which has a getRandomNumber method
+
+/* ALLOWED for woodtick_simulator.h (it's a header-only hack, that's why Common::RandomSource is not an option)
 #ifndef FORBIDDEN_SYMBOL_EXCEPTION_rand
 #undef rand
 #define rand()	FORBIDDEN_look_at_common_forbidden_h_for_more_info SYMBOL !%*
 #endif
+*/
 
 // Define a Common::RandomSource as part of the engine,
 // which has a setSeed method
+
+/* ALLOWED for woodtick_simulator.h (it's a header-only hack, that's why Common::RandomSource is not an option)
 #ifndef FORBIDDEN_SYMBOL_EXCEPTION_srand
 #undef srand
 #define srand(a)	FORBIDDEN_look_at_common_forbidden_h_for_more_info SYMBOL !%*
 #endif
+*/
 
 // Define a Common::RandomSource as part of the engine,
 // which has a getRandomNumber method
