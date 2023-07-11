@@ -14,7 +14,7 @@ namespace WoodtickSimulator {
  * Main config:
  */
 const uint32 SIM_TIME_LIMIT_IN_SECS = 10*60; // time limit until simulation stops, -1 for endless mode
-const int MAX_IDLE_TIME = 2000; // max time in one room
+const int MAX_IDLE_TIME = 10000; // max time in one room
 const bool DEBUG_PRINTS = false; // enable debug prints to stdout
 const bool DEBUG_TARGETS = false; // enable forced room route
 const bool ACTIVE = true; // if the simulation is active at all
@@ -227,8 +227,8 @@ void simulator_step(int delta) {
     uint32 sys_seconds = g_system->getMillis()/1000;
     if (SIM_TIME_LIMIT_IN_SECS > 0
         && sys_seconds >= SIM_TIME_LIMIT_IN_SECS) {
-            debug("SIM : Simulation reached time limit of %ds (system_time=%ds).",
-                                            SIM_TIME_LIMIT_IN_SECS, sys_seconds);
+            if (DEBUG_PRINTS) debug("SIM : Simulation reached time limit of %ds (system_time=%ds).",
+                                                                SIM_TIME_LIMIT_IN_SECS, sys_seconds);
             active=false;
             quit_simulation();
         }
