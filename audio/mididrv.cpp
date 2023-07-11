@@ -485,12 +485,12 @@ void MidiDriver_BASE::midiDumpDelta() {
 	uint32 delta = millis - _prevMillis;
 	_prevMillis = millis;
 
-	debugN("WOODTICK RL : room=%d; millis=%d; delta=(", g_system->getCurrentRoom(), millis);
+	debugN("WOODTICK RL : room=%d; millis=%d; delta=[", g_system->getCurrentRoom(), millis);
 	/*int varLength =*/ midiDumpVarLength(delta);
 	//if (varLength == 1)
 	//	debugN("),      ");
 	//else
-		debugN("); ");
+		debugN("]; ");
 }
 
 void MidiDriver_BASE::midiDumpDo(uint32 b) {
@@ -499,7 +499,7 @@ void MidiDriver_BASE::midiDumpDo(uint32 b) {
 	const byte secondOp = (b >> 16) & 0xff;
 
 	midiDumpDelta();
-	debugN("message=(0x%02x,0x%02x", status, firstOp);
+	debugN("message=[0x%02x,0x%02x", status, firstOp);
 
 	_midiDumpCache.push_back(status);
 	_midiDumpCache.push_back(firstOp);
@@ -508,7 +508,7 @@ void MidiDriver_BASE::midiDumpDo(uint32 b) {
 		_midiDumpCache.push_back(secondOp);
 		debugN(",0x%02x", secondOp);
 	}
-	debug("); ");
+	debug("]; ");
 }
 
 void MidiDriver_BASE::midiDumpSysEx(const byte *msg, uint16 length) {
