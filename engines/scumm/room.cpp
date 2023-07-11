@@ -44,8 +44,12 @@ namespace Scumm {
 void ScummEngine::startScene(int room, Actor *a, int objectNr) {
 	int i, where;
 
-	debug("ENV : Loading room %d", room);
+	debugC(DEBUG_GENERAL, "Loading room %d", room);
+
+	// WoodtickSimulator must be called to trigger waypoint event
 	WoodtickSimulator::set_current_room(room);
+	// g_system is informed to have the information in mididrv.cpp
+	g_system->setCurrentRoom(room);
 	
 #ifdef ENABLE_SCUMM_7_8
 	if (_game.version >= 7) {

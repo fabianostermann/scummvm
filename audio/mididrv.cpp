@@ -461,7 +461,7 @@ void MidiDriver_BASE::midiDumpInit() {
 int MidiDriver_BASE::midiDumpVarLength(const uint32 &delta) {
 	// MIDI file format has a very strange representation - "Variable Length Values"
 	// we're using only *7* bits of each byte for the data
-	// the MSB bit is 1 for all bytes, except the last one
+	// the MSB bit (first bit) is 1 for all bytes, except the last one
 	if (delta <= 127) {
 		// "Variable Length Values" of 1 byte
 		debugN("0x%02x", delta);
@@ -485,12 +485,12 @@ void MidiDriver_BASE::midiDumpDelta() {
 	uint32 delta = millis - _prevMillis;
 	_prevMillis = millis;
 
-	debugN("MIDI : delta(");
-	int varLength = midiDumpVarLength(delta);
-	if (varLength == 1)
-		debugN("),\t ");
-	else
-		debugN("), ");
+	debugN("WOODTICK RL : room=%d; millis=%d; delta=(", g_system->getCurrentRoom(), millis);
+	/*int varLength =*/ midiDumpVarLength(delta);
+	//if (varLength == 1)
+	//	debugN("),      ");
+	//else
+		debugN("); ");
 }
 
 void MidiDriver_BASE::midiDumpDo(uint32 b) {
@@ -499,19 +499,23 @@ void MidiDriver_BASE::midiDumpDo(uint32 b) {
 	const byte secondOp = (b >> 16) & 0xff;
 
 	midiDumpDelta();
-	debugN("message(0x%02x 0x%02x", status, firstOp);
+	debugN("message=(0x%02x,0x%02x", status, firstOp);
 
 	_midiDumpCache.push_back(status);
 	_midiDumpCache.push_back(firstOp);
 
 	if (status < 0xc0 || status > 0xdf) {
 		_midiDumpCache.push_back(secondOp);
-		debug(" 0x%02x)", secondOp);
-	} else
-		debug(")");
+		debugN(",0x%02x", secondOp);
+	}
+	debug("); ");
 }
 
 void MidiDriver_BASE::midiDumpSysEx(const byte *msg, uint16 length) {
+
+	// ignore SysEx for now.
+
+	/*
 	midiDumpDelta();
 	_midiDumpCache.push_back(0xf0);
 	debugN("0xf0, length(");
@@ -523,6 +527,7 @@ void MidiDriver_BASE::midiDumpSysEx(const byte *msg, uint16 length) {
 	}
 	debug("0xf7]\t\t");
 	_midiDumpCache.push_back(0xf7);
+	*/
 }
 
 

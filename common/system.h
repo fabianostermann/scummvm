@@ -1442,6 +1442,21 @@ public:
 		return _eventManager;
 	}
 
+
+	/*
+	 *	HACK: also included woodtick_simulator.h in room.cpp and scumm.cpp, this was dirty!
+	 *		  This functions are needed to get the current room in mididrv.cpp
+	 */
+	int currentRoom = 7; // Woodtick::outside
+
+	void setCurrentRoom(int newRoom) {
+		currentRoom = newRoom;
+	}
+
+	int getCurrentRoom() {
+		return currentRoom;
+	}
+
 	/**
 	 * Register hardware inputs with keymapper.
 	 *
