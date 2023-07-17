@@ -14,7 +14,7 @@ namespace WoodtickSimulator {
  * Main config:
  */
 const uint32 SIM_TIME_LIMIT_IN_SECS = 10*60; // time limit until simulation stops, -1 for endless mode
-const int MAX_IDLE_TIME = 10000; // max time in one room
+int MAX_IDLE_TIME = 12000; // max time in one room (is randomly decreased during initialization for more variation between runs)
 const bool DEBUG_PRINTS = false; // enable debug prints to stdout
 const bool DEBUG_TARGETS = false; // enable forced room route
 const bool ACTIVE = true; // if the simulation is active at all
@@ -155,7 +155,7 @@ int idle_timer = 50;
 void reset_idle_timer() {
     int time = std::rand() % MAX_IDLE_TIME;
     if (time < 400)
-        time = 400; // minimum 400 is tested with 2 hours without crash
+        time = 400; // minimum 400 is tested with 2 hours without crash of waypoints
     idle_timer = time;
 }
 
@@ -256,6 +256,9 @@ void simulator_step(int delta) {
             if (DEBUG_PRINTS) debugN("%d, ", std::rand() % 5 + 1);
         }
         if (DEBUG_PRINTS) debug("...");
+
+        MAX_IDLE_TIME = std::rand() % MAX_IDLE_TIME;
+        debug("Set MAX_IDLE_TIME=%d", MAX_IDLE_TIME);
 
         initialized = true;
     }
